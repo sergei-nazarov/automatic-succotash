@@ -1,0 +1,14 @@
+@startuml
+!include C4_Context.puml
+
+Person(user, "User", "Пользователь системы")
+
+System(system, "Heating System", "Монолитное приложение для управления отоплением")
+
+System_Ext(sensor, "Temperature Sensor", "Датчик температуры, установленный в доме")
+
+Rel(user, system, "Управление отоплением и получение данных о температуре", "HTTP")
+
+Rel(system, sensor, "Получение данных о температуре и изменение температуры", "HTTP")
+
+@enduml
