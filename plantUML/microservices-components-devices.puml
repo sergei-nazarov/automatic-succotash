@@ -1,0 +1,22 @@
+@startuml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+Container_Boundary(deviceService, "Device Management Service") {
+    Component(deviceController, "Device Controller", "Spring MVC", "Обработка HTTP-запросов для управления устройствами")
+    Component(deviceServiceComponent, "Device Service", "Spring Service", "Бизнес-логика управления устройствами")
+    Component(deviceRepository, "Device Repository", "Spring Data JPA", "Доступ к данным устройств")
+    Component(kafkaPublisher, "Kafka Publisher", "Spring Kafka", "Публикация данных в Kafka")
+
+    Rel(deviceController, deviceServiceComponent, "Вызывает методы", "HTTP")
+    Rel(deviceServiceComponent, deviceRepository, "Чтение и запись данных", "JPA")
+    Rel(deviceServiceComponent, kafkaPublisher, "Отправка сообщений о состоянии устройства", "Kafka")
+}
+
+ContainerDb(deviceDb, "Device DB", "PostgreSQL", "База данных устройств")
+
+Rel(deviceRepository, deviceDb, "Запросы к базе данных", "JDBC")
+
+Container(kafka, "Kafka", "Apache Kafka", "Шина данных для асинхронного обмена сообщениями")
+
+Rel(kafkaPublisher, kafka, "Публикация сообщений о состоянии устройства", "Kafka topic")
+@enduml

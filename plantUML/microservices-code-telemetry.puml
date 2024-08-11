@@ -1,0 +1,30 @@
+@startuml
+
+package "Telemetry Service" {
+    class TelemetryController {
+        +getLastTelemetryById(id: Long): Telemetry
+        +getTelemetryHistory(startDate: LocalDateTime, endDate: LocalDateTime): List<Telemetry>
+    }
+
+    class TelemetryService {
+        +getLastTelemetryById(id: Long): Telemetry
+        +getTelemetryHistory(startDate: LocalDateTime, endDate: LocalDateTime): List<Telemetry>
+    }
+
+    class TelemetryRepository {
+        +save(telemetry: Telemetry): Telemetry
+        +findLastById(id: Long): Optional<Telemetry>
+        +findByTimestampBetween(startDate: LocalDateTime, endDate: LocalDateTime): List<Telemetry>
+    }
+
+    class KafkaListenerService {
+        +listenTelemetryData(): void
+        +saveTelemetryData(telemetry: Telemetry): void
+    }
+
+    TelemetryController --> TelemetryService : calls
+    TelemetryService --> TelemetryRepository : uses
+    KafkaListenerService --> TelemetryRepository : saves
+}
+
+@enduml
