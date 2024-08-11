@@ -1,7 +1,9 @@
 @startuml
 !include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
 
+Person(user, "User", "Пользователь, который изменяет настройки и получает телеметрию")
 
+Boundary(smartHome, "Smart home") {
     Container(apiGateway, "API Gateway", "Spring Cloud Gateway", "Маршрутизация запросов к микросервисам")
 
     Container(deviceService, "Device Management Service", "Java + Spring Boot", "Управление устройствами")
@@ -13,25 +15,27 @@
     ContainerDb(userDb, "User DB", "PostgreSQL", "База данных пользователей")
 
     Container(kafka, "Kafka", "Apache Kafka", "Шина данных для асинхронного обмена сообщениями")
+}
 
-    System(heatingSystem, "Heating System", "Монолитное приложение для управления отоплением")
-    System_Ext(sensor, "Temperature Sensor", "Датчик температуры, установленный в доме")
 
-    Rel(apiGateway, deviceService, "Направляет запросы управления устройствами", "HTTP/REST")
-    Rel(apiGateway, telemetryService, "Направляет запросы мониторинга температуры", "HTTP/REST")
-    Rel(apiGateway, userService, "Направляет запросы управления пользователями", "HTTP/REST")
+System(heatingSystem, "Heating System", "Монолитное приложение для управления отоплением")
+System_Ext(sensor, "Temperature Sensor", "Датчик температуры, установленный в доме")
 
-    Rel(deviceService, deviceDb, "Чтение и запись данных об устройствах", "JDBC")
-    Rel(telemetryService, telemetryDb, "Чтение и запись телеметрии", "JDBC")
-    Rel(userService, userDb, "Чтение и запись данных о пользователях", "JDBC")
+Rel(apiGateway, deviceService, "Направляет запросы управления устройствами", "HTTP/REST")
+Rel(apiGateway, telemetryService, "Направляет запросы мониторинга температуры", "HTTP/REST")
+Rel(apiGateway, userService, "Направляет запросы управления пользователями", "HTTP/REST")
 
-    Rel(deviceService, kafka, "Публикация данных о состоянии устройства", "Kafka topic")
-    Rel(telemetryService, kafka, "Чтение данных о телеметрии", "Kafka topic")
+Rel(deviceService, deviceDb, "Чтение и запись данных об устройствах", "JDBC")
+Rel(telemetryService, telemetryDb, "Чтение и запись телеметрии", "JDBC")
+Rel(userService, userDb, "Чтение и запись данных о пользователях", "JDBC")
 
-    Rel(heatingSystem, sensor, "Получение данных о температуре и изменение температуры", "HTTP")
-    Rel(heatingSystem, kafka, "Чтение данных о состоянии устройства", "Kafka topic")
-    Rel(heatingSystem, kafka, "Публикация данных о телеметрии", "Kafka topic")
+Rel(deviceService, kafka, "Публикация данных о состоянии устройства", "Kafka topic")
+Rel(telemetryService, kafka, "Чтение данных о телеметрии", "Kafka topic")
 
- kafka -[hidden]->  heatingSystem
+Rel(heatingSystem, sensor, "Получение данных о температуре и изменение температуры", "HTTP")
+Rel(heatingSystem, kafka, "Чтение данных о состоянии устройства", "Kafka topic")
+Rel(heatingSystem, kafka, "Публикация данных о телеметрии", "Kafka topic")
+
+Rel(user, apiGateway, "Изменяет настройки и получает телеметрию", "HTTP/REST")
 
 @enduml
