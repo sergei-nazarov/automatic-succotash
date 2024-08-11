@@ -1,0 +1,78 @@
+asyncapi: '2.0.0'
+info:
+  title: Telemetry Service
+  version: '1.0.0'
+  description: |
+    This service listens to telemetry updates and processes the data.
+
+channels:
+  telemetry_updates:
+    description: |
+      Channel for receiving telemetry updates.
+    subscribe:
+      summary: Receive telemetry updates
+      operationId: receiveTelemetryUpdate
+      message:
+        contentType: application/json
+        summary: Telemetry data
+        payload:
+          type: object
+          properties:
+            deviceId:
+              type: integer
+              format: int64
+              description: The ID of the device
+            timestamp:
+              type: string
+              format: date-time
+              description: Timestamp of the telemetry data
+            telemetryType:
+              type: string
+              description: Type of the telemetry data
+            value:
+              type: number
+              format: double
+              description: Value of the telemetry data
+          required:
+            - deviceId
+            - timestamp
+            - telemetryType
+            - value
+
+components:
+  messages:
+    TelemetryDto:
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/TelemetryDto'
+
+  schemas:
+    TelemetryDto:
+      type: object
+      properties:
+        deviceId:
+          type: integer
+          format: int64
+          description: The ID of the device
+        timestamp:
+          type: string
+          format: date-time
+          description: Timestamp of the telemetry data
+        telemetryType:
+          type: string
+          description: Type of the telemetry data
+        value:
+          type: number
+          format: double
+          description: Value of the telemetry data
+      required:
+        - deviceId
+        - timestamp
+        - telemetryType
+        - value
+
+servers:
+  kafka:
+    url: localhost:9092
+    protocol: kafka
+    description: Kafka broker URL

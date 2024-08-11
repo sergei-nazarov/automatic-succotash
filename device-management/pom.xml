@@ -109,9 +109,7 @@
 					<outputFileName>openapi.yaml</outputFileName>
 					<outputDir>${project.basedir}</outputDir>
 				</configuration>
-
 			</plugin>
-
 		</plugins>
 	</build>
 
