@@ -1,0 +1,91 @@
+asyncapi: '2.5.0'
+info:
+  title: Device Update Service
+  version: '1.0.0'
+  description: |
+    Сервис для отправки обновлений устройств в Kafka.
+
+channels:
+  device-updates:
+    description: Канал для отправки обновлений устройств.
+    publish:
+      operationId: sendDeviceUpdate
+      summary: Отправляет обновление устройства.
+      message:
+        contentType: application/json
+        payload:
+          $ref: '#/components/schemas/DeviceUpdateMessage'
+
+components:
+  schemas:
+    DeviceUpdateMessage:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: Уникальный идентификатор устройства.
+        type:
+          type: object
+          description: Тип устройства.
+          properties:
+            id:
+              type: integer
+              description: Уникальный идентификатор типа устройства.
+            name:
+              type: string
+              description: Название типа устройства, например, "HEATER".
+        state:
+          oneOf:
+            - $ref: '#/components/schemas/HeaterState'
+            - $ref: '#/components/schemas/LightState'
+          description: Текущее состояние устройства.
+        houseId:
+          type: integer
+          description: Идентификатор дома, к которому привязано устройство.
+        serialNumber:
+          type: string
+          description: Серийный номер устройства.
+      example:
+        id: 2
+        type:
+          id: 1
+          name: "HEATER"
+        state:
+          "@class": "com.yandexpracticum.devicemanagement.model.HeaterState"
+          temperature: 71.0
+          on: false
+        houseId: 1
+        serialNumber: "SN-654321"
+
+    HeaterState:
+      type: object
+      properties:
+        "@class":
+          type: string
+          description: Всегда com.yandexpracticum.devicemanagement.model.HeaterState
+        temperature:
+          type: number
+          description: Температура устройства, если оно является обогревателем.
+        on:
+          type: boolean
+          description: Состояние включено/выключено.
+
+    LightState:
+      type: object
+      properties:
+        "@class":
+          type: string
+          description: Всегда com.yandexpracticum.devicemanagement.model.LightState.
+        brightness:
+          type: integer
+          description: Уровень яркости света
+        on:
+          type: boolean
+          description: Состояние включено/выключено.
+
+servers:
+  kafka:
+    url: 'kafka:9092'
+    protocol: kafka
+    description: 'Kafka брокер для отправки сообщений.'
+

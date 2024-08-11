@@ -1,0 +1,127 @@
+version: "3.5"
+
+services:
+  kafka-0:
+    container_name: kafka-0
+    hostname: kafka-0
+    image: docker.io/bitnami/kafka:3.7
+    ports:
+      - "29092:9092"
+    restart: always
+    networks:
+      - kafka
+    environment:
+      # KAFKA CLUSTER
+      - KAFKA_CFG_NODE_ID=0
+      - KAFKA_KRAFT_CLUSTER_ID=abcdefghijklmnopqrstuv
+      - KAFKA_CFG_PROCESS_ROLES=broker,controller
+      - KAFKA_CFG_CONTROLLER_QUORUM_VOTERS=0@kafka-0:9093,1@kafka-1:9093,2@kafka-2:9093
+      # LISTENERS
+      - KAFKA_CFG_LISTENERS=PLAINTEXT://:9092,CONTROLLER://:9093
+      - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://host.docker.internal:29092
+      - KAFKA_CFG_INTER_BROKER_LISTENER_NAME=PLAINTEXT
+      - KAFKA_CFG_CONTROLLER_LISTENER_NAMES=CONTROLLER
+      # COMMON SETTINGS
+      - KAFKA_CFG_AUTO_CREATE_TOPICS_ENABLE=true
+    volumes:
+      - kafka_0_data:/bitnami/kafka
+    healthcheck:
+      test: "bash -c 'printf \"\" > /dev/tcp/127.0.0.1/9092; exit $$?;'"
+      interval: 5s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+  kafka-1:
+    container_name: kafka-1
+    hostname: kafka-1
+    image: docker.io/bitnami/kafka:3.7
+    ports:
+      - "29093:9092"
+    restart: always
+    networks:
+      - kafka
+    environment:
+      # KAFKA CLUSTER
+      - KAFKA_CFG_NODE_ID=1
+      - KAFKA_KRAFT_CLUSTER_ID=abcdefghijklmnopqrstuv
+      - KAFKA_CFG_PROCESS_ROLES=broker,controller
+      - KAFKA_CFG_CONTROLLER_QUORUM_VOTERS=0@kafka-0:9093,1@kafka-1:9093,2@kafka-2:9093
+      # LISTENERS
+      - KAFKA_CFG_LISTENERS=PLAINTEXT://:9092,CONTROLLER://:9093
+      - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://host.docker.internal:29093
+      - KAFKA_CFG_INTER_BROKER_LISTENER_NAME=PLAINTEXT
+      - KAFKA_CFG_CONTROLLER_LISTENER_NAMES=CONTROLLER
+      # COMMON SETTINGS
+      - KAFKA_CFG_AUTO_CREATE_TOPICS_ENABLE=true
+    volumes:
+      - kafka_1_data:/bitnami/kafka
+    healthcheck:
+      test: "bash -c 'printf \"\" > /dev/tcp/127.0.0.1/9092; exit $$?;'"
+      interval: 5s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+  kafka-2:
+    container_name: kafka-2
+    hostname: kafka-2
+    image: docker.io/bitnami/kafka:3.7
+    ports:
+      - "29094:9092"
+    restart: always
+    networks:
+      - kafka
+    environment:
+      # KAFKA CLUSTER
+      - KAFKA_CFG_NODE_ID=2
+      - KAFKA_KRAFT_CLUSTER_ID=abcdefghijklmnopqrstuv
+      - KAFKA_CFG_PROCESS_ROLES=broker,controller
+      - KAFKA_CFG_CONTROLLER_QUORUM_VOTERS=0@kafka-0:9093,1@kafka-1:9093,2@kafka-2:9093
+      # LISTENERS
+      - KAFKA_CFG_LISTENERS=PLAINTEXT://:9092,CONTROLLER://:9093
+      - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://host.docker.internal:29094
+      - KAFKA_CFG_INTER_BROKER_LISTENER_NAME=PLAINTEXT
+      - KAFKA_CFG_CONTROLLER_LISTENER_NAMES=CONTROLLER
+      # COMMON SETTINGS
+      - KAFKA_CFG_AUTO_CREATE_TOPICS_ENABLE=true
+    volumes:
+      - kafka_2_data:/bitnami/kafka
+    healthcheck:
+      test: "bash -c 'printf \"\" > /dev/tcp/127.0.0.1/9092; exit $$?;'"
+      interval: 5s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+  kafka-ui:
+    container_name: kafka-ui
+    image: provectuslabs/kafka-ui:v0.7.2
+    ports:
+      - 8084:8084
+    restart: always
+    networks:
+      - kafka
+    environment:
+      # CLUSTER SETTINGS
+      - KAFKA_CLUSTERS_0_NAME=dev-cluster
+      - KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS=kafka-0:9092,kafka-1:9092,kafka-2:9092
+      - DYNAMIC_CONFIG_ENABLED=true
+    depends_on:
+      - kafka-0
+      - kafka-1
+      - kafka-2
+    healthcheck:
+      test: wget --no-verbose --tries=1 --spider localhost:8080 || exit 1
+      interval: 5s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+volumes:
+  kafka_0_data:
+  kafka_1_data:
+  kafka_2_data:
+
+networks:
+  kafka:
