@@ -191,6 +191,6 @@ build/
 
 tmp/
 task-*
-/docker/truststore/
-/docker/keystore/
-/docker/jmx-exporter/
+/compose/truststore/
+/compose/keystore/
+/compose/jmx-exporter/
