@@ -2,18 +2,16 @@
 
 package "Device Management Service" {
     class DeviceController {
-        +getAllDevices(): List<Device>
-        +getDeviceById(id: Long): Device
-        +createDevice(device: Device): Device
-        +updateDevice(id: Long, device: Device): Device
-        +deleteDevice(id: Long): void
+        +getDevice(deviceId: Long): ResponseEntity<Device>
+        +updateDeviceState(deviceId: Long, stateData: Map<String, Object>): ResponseEntity<Device>
+        +createDevice(deviceDto: DeviceDto): ResponseEntity<Device>
+        +deleteDevice(id: Long): ResponseEntity<Void>
     }
 
     class DeviceService {
-        +getAllDevices(): List<Device>
-        +getDeviceById(id: Long): Device
-        +createDevice(device: Device): Device
-        +updateDevice(id: Long, device: Device): Device
+        +getDeviceById(id: Long): Optional<Device>
+        +updateDeviceState(id: Long, stateData: Map<String, Object>): Device
+        +createDevice(deviceDto: DeviceDto): Device
         +deleteDevice(id: Long): void
     }
 
@@ -24,13 +22,18 @@ package "Device Management Service" {
         +deleteById(id: Long): void
     }
 
-    class KafkaPublisher {
-        +publishDeviceEvent(device: Device): void
+    class DeviceTypeRepository {
+        +findByName(name: String): DeviceType
+    }
+
+    class KafkaProducerService {
+        +sendDeviceUpdate(device: Device): void
     }
 
     DeviceController --> DeviceService : calls
     DeviceService --> DeviceRepository : uses
-    DeviceService --> KafkaPublisher : publishes
+    DeviceService --> DeviceTypeRepository : uses
+    DeviceService --> KafkaProducerService : publishes
 }
 
 @enduml

@@ -14,7 +14,7 @@ public class KafkaTelemetryListenerService {
     private final TelemetryRepository telemetryRepository;
 
     @KafkaListener(topics = "${kafka.topic.telemetry_updates}")
-    public void listen(TelemetryDto dto) {
+    public void listenTelemetryData(TelemetryDto dto) {
         telemetryRepository.save(toEntity(dto));
     }
 

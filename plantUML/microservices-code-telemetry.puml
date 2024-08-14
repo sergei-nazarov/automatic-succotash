@@ -2,24 +2,23 @@
 
 package "Telemetry Service" {
     class TelemetryController {
-        +getLastTelemetryById(id: Long): Telemetry
-        +getTelemetryHistory(startDate: LocalDateTime, endDate: LocalDateTime): List<Telemetry>
+        +getLatestTelemetry(deviceId: Long): ResponseEntity<Map<TelemetryType, TelemetryDto>>
+        +getTelemetryHistory(deviceId: Long, startDate: LocalDateTime, endDate: LocalDateTime): ResponseEntity<Map<TelemetryType, List<TelemetryDto>>>
     }
 
     class TelemetryService {
-        +getLastTelemetryById(id: Long): Telemetry
-        +getTelemetryHistory(startDate: LocalDateTime, endDate: LocalDateTime): List<Telemetry>
+        +getLatestTelemetry(deviceId: Long): Map<TelemetryType, TelemetryDto>
+        +getTelemetryHistory(deviceId: Long, startDate: LocalDateTime, endDate: LocalDateTime): Map<TelemetryType, List<TelemetryDto>>
     }
 
     class TelemetryRepository {
-        +save(telemetry: Telemetry): Telemetry
-        +findLastById(id: Long): Optional<Telemetry>
-        +findByTimestampBetween(startDate: LocalDateTime, endDate: LocalDateTime): List<Telemetry>
+        +save(telemetry: TelemetryData): TelemetryData
+        +findLatestTelemetryByDeviceIdGroupedByType(deviceId: Long): Stream<TelemetryData>
+        +findAllByDeviceIdAndTimestampBetween(deviceId: Long, startDate: LocalDateTime, endDate: LocalDateTime): Stream<TelemetryData>
     }
 
     class KafkaListenerService {
         +listenTelemetryData(): void
-        +saveTelemetryData(telemetry: Telemetry): void
     }
 
     TelemetryController --> TelemetryService : calls
