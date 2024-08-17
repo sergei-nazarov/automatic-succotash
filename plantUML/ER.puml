@@ -5,6 +5,7 @@ entity "Device" as device {
     type_id: Long [FK]
     house_id: Long [FK]
     serial_number: String
+    IPv6: inet
     state: JSONB
 }
 
@@ -26,6 +27,7 @@ entity "User" as user {
     --
     name: String
     email: String
+    password: String
 }
 
 entity "TelemetryData" as telemetryData {

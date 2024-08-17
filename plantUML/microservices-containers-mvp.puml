@@ -9,8 +9,6 @@ Boundary(smartHome, "Smart home") {
     Container(deviceService, "Device Management Service", "Java + Spring Boot", "Управление устройствами")
     Container(telemetryService, "Telemetry service", "Java + Spring Boot", "Мониторинг телеметрии")
     Container(userService, "User Management Service", "Java + Spring Boot", "Управление пользователями")
-    Container(sensorPollingService, "Sensor Polling Service", "Java + Spring Boot", "Регулярный опрос датчиков")
-    Container(settingUpdateService, "Setting Update Service", "Java + Spring Boot", "Обработка изменений настроек")
 
     ContainerDb(deviceDb, "Device DB", "PostgreSQL", "База данных устройств")
     ContainerDb(telemetryDb, "Telemetry DB", "PostgreSQL", "База данных температуры")
@@ -18,14 +16,14 @@ Boundary(smartHome, "Smart home") {
 
     Container(kafka, "Kafka", "Apache Kafka", "Шина данных для асинхронного обмена сообщениями")
 }
-
 AddRelTag("toUserServiceLine", $lineColor="orange", $lineStyle = DashedLine())
 
 Rel_Right(telemetryService, userService, "Получение прав пользователей и уведомления", "HTTP/REST", $tags="toUserServiceLine")
 Rel_Left(deviceService, userService, "Получение прав пользователей и уведомления", "HTTP/REST", $tags="toUserServiceLine")
 
+System(heatingSystem, "Heating System", "Монолитное приложение для управления отоплением")
 System_Ext(sensor, "Temperature Sensor", "Датчик температуры, установленный в доме")
-System_Ext(smtpServer, "Email service", "Для уведомлений")
+System_Ext(smtpServer, "Email service", "For notifications")
 
 Rel(apiGateway, deviceService, "Направляет запросы управления устройствами", "HTTP/REST")
 Rel(apiGateway, telemetryService, "Направляет запросы мониторинга температуры", "HTTP/REST")
@@ -40,12 +38,10 @@ Rel(telemetryService, kafka, "Чтение данных о телеметрии"
 
 Rel_Up(userService, smtpServer, "Уведомления пользователей", "SMTP")
 
-' Связи новых микросервисов
-Rel_D(sensorPollingService, sensor, "Опрос данных с датчиков", "HTTP")
-Rel_U(sensorPollingService, kafka, "Публикация данных в Kafka", "Kafka topic")
 
-Rel_U(settingUpdateService, kafka, "Чтение настроек из Kafka", "Kafka topic")
-Rel_D(settingUpdateService, sensor, "Применение настроек к устройствам", "HTTP")
+BiRel(heatingSystem, sensor, "Получение данных о температуре и изменение температуры", "HTTP")
+Rel_U(heatingSystem, kafka, "Чтение данных о состоянии устройства", "Kafka topic")
+Rel_U(heatingSystem, kafka, "Публикация данных о телеметрии", "Kafka topic")
 
 BiRel(user, apiGateway, "Изменяет настройки и получает телеметрию", "HTTP/REST")
 
