@@ -1,0 +1,47 @@
+@startuml
+entity "Device" as device {
+    *id: Long [PK]
+    --
+    type_id: Long [FK]
+    house_id: Long [FK]
+    serial_number: String
+    IPv6: inet
+    state: JSONB
+}
+
+entity "DeviceType" as deviceType {
+    *id: Long [PK]
+    --
+    name: String
+}
+
+entity "House" as house {
+    *id: Long [PK]
+    --
+    user_id: Long [FK]
+    address: String
+}
+
+entity "User" as user {
+    *id: Long [PK]
+    --
+    name: String
+    email: String
+    password: String
+}
+
+entity "TelemetryData" as telemetryData {
+    *id: Long [PK]
+    --
+    device_id: Long [FK]
+    telemetry_type: Enum
+    value: Double
+    timestamp: Date
+}
+
+user ||--o{ house : "1:N"
+house ||--o{ device : "1:N"
+deviceType ||--o{ device : "1:N"
+device ||--o{ telemetryData : "1:N"
+
+@enduml

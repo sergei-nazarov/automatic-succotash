@@ -1,0 +1,114 @@
+openapi: 3.0.1
+info:
+  title: OpenAPI definition
+  version: v0
+servers:
+- url: http://localhost:8081
+  description: Generated server url
+tags:
+- name: Telemetry API
+  description: API для работы с телеметрией
+paths:
+  /api/telemetry/{deviceId}/latest:
+    get:
+      tags:
+      - Telemetry API
+      summary: Получить последние данные телеметрии
+      description: Возвращает последние доступные данные телеметрии для указанного
+        устройства.
+      operationId: getLatestTelemetry
+      parameters:
+      - name: deviceId
+        in: path
+        description: Идентификатор устройства
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "200":
+          description: Успешное получение данных
+          content:
+            '*/*':
+              schema:
+                type: object
+                additionalProperties:
+                  $ref: "#/components/schemas/TelemetryDto"
+        "204":
+          description: Данные телеметрии не найдены
+          content:
+            '*/*':
+              schema:
+                type: object
+                additionalProperties:
+                  $ref: "#/components/schemas/TelemetryDto"
+  /api/telemetry/{deviceId}/history:
+    get:
+      tags:
+      - Telemetry API
+      summary: Получить историю данных телеметрии
+      description: Возвращает историю данных телеметрии за указанный период для указанного
+        устройства.
+      operationId: getTelemetryHistory
+      parameters:
+      - name: deviceId
+        in: path
+        description: Идентификатор устройства
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: startDate
+        in: query
+        description: Начальная дата для фильтрации истории
+        required: false
+        schema:
+          type: string
+          format: date-time
+      - name: endDate
+        in: query
+        description: Конечная дата для фильтрации истории
+        required: false
+        schema:
+          type: string
+          format: date-time
+      responses:
+        "204":
+          description: История данных телеметрии не найдена
+          content:
+            '*/*':
+              schema:
+                type: object
+                additionalProperties:
+                  type: array
+                  items:
+                    $ref: "#/components/schemas/TelemetryDto"
+        "200":
+          description: Успешное получение данных
+          content:
+            '*/*':
+              schema:
+                type: object
+                additionalProperties:
+                  type: array
+                  items:
+                    $ref: "#/components/schemas/TelemetryDto"
+components:
+  schemas:
+    TelemetryDto:
+      type: object
+      properties:
+        deviceId:
+          type: integer
+          format: int64
+        timestamp:
+          type: string
+          format: date-time
+        telemetryType:
+          type: string
+          enum:
+          - TEMPERATURE
+          - BRIGHTNESS
+        value:
+          type: number
+          format: double

@@ -1,0 +1,39 @@
+@startuml
+
+package "Device Management Service" {
+    class DeviceController {
+        +getDevice(deviceId: Long): ResponseEntity<Device>
+        +updateDeviceState(deviceId: Long, stateData: Map<String, Object>): ResponseEntity<Device>
+        +createDevice(deviceDto: DeviceDto): ResponseEntity<Device>
+        +deleteDevice(id: Long): ResponseEntity<Void>
+    }
+
+    class DeviceService {
+        +getDeviceById(id: Long): Optional<Device>
+        +updateDeviceState(id: Long, stateData: Map<String, Object>): Device
+        +createDevice(deviceDto: DeviceDto): Device
+        +deleteDevice(id: Long): void
+    }
+
+    class DeviceRepository {
+        +findAll(): List<Device>
+        +findById(id: Long): Optional<Device>
+        +save(device: Device): Device
+        +deleteById(id: Long): void
+    }
+
+    class DeviceTypeRepository {
+        +findByName(name: String): DeviceType
+    }
+
+    class KafkaProducerService {
+        +sendDeviceUpdate(device: Device): void
+    }
+
+    DeviceController --> DeviceService : calls
+    DeviceService --> DeviceRepository : uses
+    DeviceService --> DeviceTypeRepository : uses
+    DeviceService --> KafkaProducerService : publishes
+}
+
+@enduml

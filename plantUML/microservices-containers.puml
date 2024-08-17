@@ -1,0 +1,52 @@
+@startuml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+Person(user, "User", "Пользователь, который изменяет настройки и получает телеметрию")
+
+Boundary(smartHome, "Smart home") {
+    Container(apiGateway, "API Gateway", "Spring Cloud Gateway", "Маршрутизация запросов к микросервисам")
+
+    Container(deviceService, "Device Management Service", "Java + Spring Boot", "Управление устройствами")
+    Container(telemetryService, "Telemetry service", "Java + Spring Boot", "Мониторинг телеметрии")
+    Container(userService, "User Management Service", "Java + Spring Boot", "Управление пользователями")
+    Container(sensorPollingService, "Sensor Polling Service", "Java + Spring Boot", "Регулярный опрос датчиков")
+    Container(settingUpdateService, "Setting Update Service", "Java + Spring Boot", "Обработка изменений настроек")
+
+    ContainerDb(deviceDb, "Device DB", "PostgreSQL", "База данных устройств")
+    ContainerDb(telemetryDb, "Telemetry DB", "PostgreSQL", "База данных температуры")
+    ContainerDb(userDb, "User DB", "PostgreSQL", "База данных пользователей")
+
+    Container(kafka, "Kafka", "Apache Kafka", "Шина данных для асинхронного обмена сообщениями")
+}
+
+AddRelTag("toUserServiceLine", $lineColor="orange", $lineStyle = DashedLine())
+
+Rel_Right(telemetryService, userService, "Получение прав пользователей и уведомления", "HTTP/REST", $tags="toUserServiceLine")
+Rel_Left(deviceService, userService, "Получение прав пользователей и уведомления", "HTTP/REST", $tags="toUserServiceLine")
+
+System_Ext(sensor, "Temperature Sensor", "Датчик температуры, установленный в доме")
+System_Ext(smtpServer, "Email service", "Для уведомлений")
+
+Rel(apiGateway, deviceService, "Направляет запросы управления устройствами", "HTTP/REST")
+Rel(apiGateway, telemetryService, "Направляет запросы мониторинга температуры", "HTTP/REST")
+Rel(apiGateway, userService, "Направляет запросы управления пользователями", "HTTP/REST")
+
+Rel(deviceService, deviceDb, "Чтение и запись данных об устройствах", "JDBC")
+Rel(telemetryService, telemetryDb, "Чтение и запись телеметрии", "JDBC")
+Rel(userService, userDb, "Чтение и запись данных о пользователях", "JDBC")
+
+Rel(deviceService, kafka, "Публикация данных о состоянии устройства", "Kafka topic")
+Rel(telemetryService, kafka, "Чтение данных о телеметрии", "Kafka topic")
+
+Rel_Up(userService, smtpServer, "Уведомления пользователей", "SMTP")
+
+' Связи новых микросервисов
+Rel_D(sensorPollingService, sensor, "Опрос данных с датчиков", "HTTP")
+Rel_U(sensorPollingService, kafka, "Публикация данных в Kafka", "Kafka topic")
+
+Rel_U(settingUpdateService, kafka, "Чтение настроек из Kafka", "Kafka topic")
+Rel_D(settingUpdateService, sensor, "Применение настроек к устройствам", "HTTP")
+
+BiRel(user, apiGateway, "Изменяет настройки и получает телеметрию", "HTTP/REST")
+
+@enduml

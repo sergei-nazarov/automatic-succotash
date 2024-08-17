@@ -1,0 +1,192 @@
+version: "3.8"
+name: smart-home
+
+services:
+
+  kong-database:
+    image: postgres:13
+    container_name: kong-database
+    environment:
+      POSTGRES_USER: kong
+      POSTGRES_DB: kong
+      POSTGRES_PASSWORD: kong
+    networks:
+      - kafka
+
+  kong-migration:
+    image: kong:3.0
+    container_name: kong-migration
+    command: /bin/sh -c "sleep 10 && kong migrations bootstrap"
+    environment:
+      KONG_DATABASE: postgres
+      KONG_PG_HOST: kong-database
+      KONG_PG_PASSWORD: kong
+      KONG_PG_USER: kong
+    networks:
+      - kafka
+    depends_on:
+      - kong-database
+
+  kong:
+    image: kong:3.0
+    container_name: kong
+    ports:
+      - "8000:8000"
+      - "8001:8001"
+    environment:
+      KONG_DATABASE: postgres
+      KONG_PG_HOST: kong-database
+      KONG_PG_PASSWORD: kong
+      KONG_PG_USER: kong
+      KONG_PROXY_ACCESS_LOG: /dev/stdout
+      KONG_ADMIN_ACCESS_LOG: /dev/stdout
+      KONG_PROXY_ERROR_LOG: /dev/stderr
+      KONG_ADMIN_ERROR_LOG: /dev/stderr
+      KONG_ADMIN_LISTEN: 0.0.0.0:8001
+    networks:
+      - kafka
+    depends_on:
+      - kong-database
+      - kong-migration
+    restart: on-failure
+
+  kong-setup:
+    image: badouralix/curl-jq:latest
+    container_name: kong-setup
+    command: [ "/bin/sh", "-c", "/scripts/kong-setup.sh" ]
+    volumes:
+      - ./kong-setup.sh:/scripts/kong-setup.sh
+    networks:
+      - kafka
+    depends_on:
+      - kong
+
+  device-management:
+    build:
+      context: ../device-management
+      dockerfile: Dockerfile
+    container_name: device-management
+#    ports:
+#      - "8080:8080"
+    networks:
+      - kafka
+    environment:
+      - SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka-0:9092,kafka-1:9092,kafka-2:9092
+      - SERVER_FORWARDHEADERSSTRATEGY=framework
+
+  telemetry:
+    build:
+      context: ../telemetry
+      dockerfile: Dockerfile
+    container_name: telemetry
+#    ports:
+#      - "8081:8080"
+    networks:
+      - kafka
+    environment:
+      - SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka-0:9092,kafka-1:9092,kafka-2:9092
+      - SERVER_FORWARDHEADERSSTRATEGY=framework
+
+  kafka-0:
+    container_name: kafka-0
+    hostname: kafka-0
+    image: docker.io/bitnami/kafka:3.7
+    ports:
+      - "29092:29092"
+    restart: always
+    networks:
+      - kafka
+    environment:
+      # KAFKA CLUSTER
+      - KAFKA_CFG_NODE_ID=0
+      - KAFKA_KRAFT_CLUSTER_ID=abcdefghijklmnopqrstuv
+      - KAFKA_CFG_PROCESS_ROLES=broker,controller
+      - KAFKA_CFG_CONTROLLER_QUORUM_VOTERS=0@kafka-0:9093,1@kafka-1:9093,2@kafka-2:9093
+      # LISTENERS
+      - KAFKA_CFG_LISTENERS=PLAINTEXT://:9092,PLAINTEXT_LOCAL://0.0.0.0:29092,CONTROLLER://:9093
+      - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://kafka-0:9092,PLAINTEXT_LOCAL://localhost:29092
+      - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=PLAINTEXT:PLAINTEXT,PLAINTEXT_LOCAL:PLAINTEXT,CONTROLLER:PLAINTEXT
+      - KAFKA_CFG_INTER_BROKER_LISTENER_NAME=PLAINTEXT
+      - KAFKA_CFG_CONTROLLER_LISTENER_NAMES=CONTROLLER
+      # COMMON SETTINGS
+      - KAFKA_CFG_AUTO_CREATE_TOPICS_ENABLE=true
+    volumes:
+      - kafka_0_data:/bitnami/kafka
+    healthcheck:
+      test: "bash -c 'printf \"\" > /dev/tcp/127.0.0.1/9092; exit $$?;'"
+      interval: 5s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+  kafka-1:
+    container_name: kafka-1
+    hostname: kafka-1
+    image: docker.io/bitnami/kafka:3.7
+    ports:
+      - "29093:29092"
+    restart: always
+    networks:
+      - kafka
+    environment:
+      # KAFKA CLUSTER
+      - KAFKA_CFG_NODE_ID=1
+      - KAFKA_KRAFT_CLUSTER_ID=abcdefghijklmnopqrstuv
+      - KAFKA_CFG_PROCESS_ROLES=broker,controller
+      - KAFKA_CFG_CONTROLLER_QUORUM_VOTERS=0@kafka-0:9093,1@kafka-1:9093,2@kafka-2:9093
+      # LISTENERS
+      - KAFKA_CFG_LISTENERS=PLAINTEXT://:9092,PLAINTEXT_LOCAL://0.0.0.0:29092,CONTROLLER://:9093
+      - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://kafka-1:9092,PLAINTEXT_LOCAL://localhost:29093
+      - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=PLAINTEXT:PLAINTEXT,PLAINTEXT_LOCAL:PLAINTEXT,CONTROLLER:PLAINTEXT
+      - KAFKA_CFG_INTER_BROKER_LISTENER_NAME=PLAINTEXT
+      - KAFKA_CFG_CONTROLLER_LISTENER_NAMES=CONTROLLER
+      # COMMON SETTINGS
+      - KAFKA_CFG_AUTO_CREATE_TOPICS_ENABLE=true
+    volumes:
+      - kafka_1_data:/bitnami/kafka
+    healthcheck:
+      test: "bash -c 'printf \"\" > /dev/tcp/127.0.0.1/9092; exit $$?;'"
+      interval: 5s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+  kafka-2:
+    container_name: kafka-2
+    hostname: kafka-2
+    image: docker.io/bitnami/kafka:3.7
+    ports:
+      - "29094:29092"
+    restart: always
+    networks:
+      - kafka
+    environment:
+      # KAFKA CLUSTER
+      - KAFKA_CFG_NODE_ID=2
+      - KAFKA_KRAFT_CLUSTER_ID=abcdefghijklmnopqrstuv
+      - KAFKA_CFG_PROCESS_ROLES=broker,controller
+      - KAFKA_CFG_CONTROLLER_QUORUM_VOTERS=0@kafka-0:9093,1@kafka-1:9093,2@kafka-2:9093
+      # LISTENERS
+      - KAFKA_CFG_LISTENERS=PLAINTEXT://:9092,PLAINTEXT_LOCAL://0.0.0.0:29092,CONTROLLER://:9093
+      - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://kafka-2:9092,PLAINTEXT_LOCAL://localhost:29094
+      - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=PLAINTEXT:PLAINTEXT,PLAINTEXT_LOCAL:PLAINTEXT,CONTROLLER:PLAINTEXT
+      - KAFKA_CFG_INTER_BROKER_LISTENER_NAME=PLAINTEXT
+      - KAFKA_CFG_CONTROLLER_LISTENER_NAMES=CONTROLLER
+      # COMMON SETTINGS
+      - KAFKA_CFG_AUTO_CREATE_TOPICS_ENABLE=true
+    volumes:
+      - kafka_2_data:/bitnami/kafka
+    healthcheck:
+      test: "bash -c 'printf \"\" > /dev/tcp/127.0.0.1/9092; exit $$?;'"
+      interval: 5s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+volumes:
+  kafka_0_data:
+  kafka_1_data:
+  kafka_2_data:
+
+networks:
+  kafka:

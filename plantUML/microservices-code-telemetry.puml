@@ -1,0 +1,29 @@
+@startuml
+
+package "Telemetry Service" {
+    class TelemetryController {
+        +getLatestTelemetry(deviceId: Long): ResponseEntity<Map<TelemetryType, TelemetryDto>>
+        +getTelemetryHistory(deviceId: Long, startDate: LocalDateTime, endDate: LocalDateTime): ResponseEntity<Map<TelemetryType, List<TelemetryDto>>>
+    }
+
+    class TelemetryService {
+        +getLatestTelemetry(deviceId: Long): Map<TelemetryType, TelemetryDto>
+        +getTelemetryHistory(deviceId: Long, startDate: LocalDateTime, endDate: LocalDateTime): Map<TelemetryType, List<TelemetryDto>>
+    }
+
+    class TelemetryRepository {
+        +save(telemetry: TelemetryData): TelemetryData
+        +findLatestTelemetryByDeviceIdGroupedByType(deviceId: Long): Stream<TelemetryData>
+        +findAllByDeviceIdAndTimestampBetween(deviceId: Long, startDate: LocalDateTime, endDate: LocalDateTime): Stream<TelemetryData>
+    }
+
+    class KafkaListenerService {
+        +listenTelemetryData(): void
+    }
+
+    TelemetryController --> TelemetryService : calls
+    TelemetryService --> TelemetryRepository : uses
+    KafkaListenerService --> TelemetryRepository : saves
+}
+
+@enduml

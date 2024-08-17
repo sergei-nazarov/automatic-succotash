@@ -1,0 +1,196 @@
+openapi: 3.0.1
+info:
+  title: OpenAPI definition
+  version: v0
+servers:
+- url: http://localhost:8080
+  description: Generated server url
+tags:
+- name: Device API
+  description: API для управления устройствами
+paths:
+  /api/devices/{device_id}/state:
+    put:
+      tags:
+      - Device API
+      summary: Обновить состояние устройства
+      description: Обновляет состояние устройства на основе переданных данных.
+      operationId: updateDeviceState
+      parameters:
+      - name: device_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        description: Данные состояния устройства
+        content:
+          application/json:
+            schema:
+              oneOf:
+              - $ref: "#/components/schemas/HeaterState"
+              - $ref: "#/components/schemas/LightState"
+            examples:
+              HeaterStateExample:
+                description: HeaterStateExample
+                value:
+                  "on": true
+                  temperature: 24.0
+              LightStateExample:
+                description: LightStateExample
+                value:
+                  "on": false
+                  brightness: 80
+        required: true
+      responses:
+        "400":
+          description: Ошибка обновления
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/Device"
+        "200":
+          description: Состояние устройства успешно обновлено
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/Device"
+  /api/devices:
+    post:
+      tags:
+      - Device API
+      summary: Создать новое устройство
+      description: Создает новое устройство на основе переданных данных.
+      operationId: createDevice
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DeviceDto"
+        required: true
+      responses:
+        "400":
+          description: Некорректные данные устройства
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/Device"
+        "201":
+          description: Устройство успешно создано
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/Device"
+  /api/devices/{device_id}:
+    get:
+      tags:
+      - Device API
+      summary: Получить информацию об устройстве
+      description: Возвращает информацию об устройстве по указанному идентификатору.
+      operationId: getDevice
+      parameters:
+      - name: device_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "404":
+          description: Устройство не найдено
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/Device"
+        "200":
+          description: Устройство найдено
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/Device"
+  /api/devices/{id}:
+    delete:
+      tags:
+      - Device API
+      summary: Удалить устройство
+      description: Удаляет устройство по указанному идентификатору.
+      operationId: deleteDevice
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "404":
+          description: Устройство не найдено
+        "204":
+          description: Устройство успешно удалено
+components:
+  schemas:
+    HeaterState:
+      type: object
+      allOf:
+      - $ref: "#/components/schemas/DeviceState"
+      - type: object
+        properties:
+          temperature:
+            type: number
+            format: double
+    LightState:
+      type: object
+      allOf:
+      - $ref: "#/components/schemas/DeviceState"
+      - type: object
+        properties:
+          brightness:
+            type: integer
+            format: int32
+    Device:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        type:
+          $ref: "#/components/schemas/DeviceType"
+        state:
+          oneOf:
+          - $ref: "#/components/schemas/HeaterState"
+          - $ref: "#/components/schemas/LightState"
+        houseId:
+          type: integer
+          format: int64
+        serialNumber:
+          type: string
+    DeviceState:
+      type: object
+      properties:
+        "on":
+          type: boolean
+    DeviceType:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+          enum:
+          - HEATER
+          - LIGHT
+    DeviceDto:
+      type: object
+      properties:
+        deviceType:
+          type: string
+          enum:
+          - HEATER
+          - LIGHT
+        houseId:
+          type: integer
+          format: int64
+        serialNumber:
+          type: string

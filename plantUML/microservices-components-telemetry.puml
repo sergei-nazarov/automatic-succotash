@@ -1,0 +1,23 @@
+@startuml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+Container_Boundary(telemetryService, "Telemetry Service") {
+    Component(telemetryController, "Telemetry Controller", "Spring MVC", "Обработка HTTP-запросов для мониторинга телеметрии")
+    Component(telemetryServiceComponent, "Telemetry Service", "Spring Service", "Бизнес-логика мониторинга телеметрии")
+    Component(telemetryRepository, "Telemetry Repository", "Spring Data JPA", "Доступ к данным телеметрии")
+
+    Component(kafkaListenerService, "Kafka Listener Service", "Spring Kafka", "Чтение данных из Kafka и сохранение в БД")
+
+    Rel(telemetryController, telemetryServiceComponent, "Вызывает методы", "HTTP")
+    Rel(telemetryServiceComponent, telemetryRepository, "Чтение и запись данных", "JPA")
+    Rel(kafkaListenerService, telemetryRepository, "Сохранение данных телеметрии", "JPA")
+}
+
+ContainerDb(telemetryDb, "Telemetry DB", "PostgreSQL", "База данных телеметрии")
+
+Rel(telemetryRepository, telemetryDb, "Запросы к базе данных", "JDBC")
+
+Container(kafka, "Kafka", "Apache Kafka", "Шина данных для асинхронного обмена сообщениями")
+
+Rel(kafka, kafkaListenerService, "Получение телеметрии", "Kafka topic")
+@enduml
