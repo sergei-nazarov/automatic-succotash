@@ -1,0 +1,42 @@
+recipe: default.v1
+
+assistant_id: sprint5
+
+language: ru
+
+pipeline:
+  - name: WhitespaceTokenizer               # Токенизатор, разделяющий текст по пробелам
+  - name: RegexFeaturizer                   # Извлечение признаков с помощью регулярных выражений
+  - name: LexicalSyntacticFeaturizer        # Лексико-синтаксический анализатор
+  - name: CountVectorsFeaturizer            # Извлечение признаков по частоте слов
+    analyzer: "char_wb"                     # Символьные N-граммы
+    min_ngram: 1
+    max_ngram: 3                            # Увеличен размер N-грамм для лучшего контекста
+
+  # Подключение предобученной модели трансформера (BERT)
+  - name: "LanguageModelFeaturizer"
+    model_name: "bert"                      # Модель BERT для русского языка
+    model_weights: "bert-base-cased"        # Весы модели BERT
+    cache_dir: null
+
+  - name: DIETClassifier                    # Классификатор на базе DIET
+    epochs: 100                             # Увеличено количество эпох для обучения
+    transformer_size: 128                   # Увеличен размер слоя трансформера
+    number_of_transformer_layers: 2         # Увеличено количество слоёв трансформера
+    use_masked_language_model: false        # Отключено для ускорения
+    batch_strategy: "balanced"
+    hidden_layers_sizes:
+      text: [128]                           # Увеличен размер скрытых слоёв для улучшения обучения
+
+  - name: EntitySynonymMapper               # Маппер синонимов сущностей
+  - name: ResponseSelector                  # Минимальный выбор ответа
+    epochs: 100                             # Увеличено количество эпох для обучения
+
+policies:
+  - name: MemoizationPolicy
+    max_history: 5                          # Увеличенная история для сложных диалогов
+  - name: RulePolicy
+  - name: TEDPolicy
+    max_history: 5                          # Увеличенное количество шагов в истории
+    epochs: 100                             # Увеличено количество эпох для обучения
+    constrain_similarities: true

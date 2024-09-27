@@ -1,0 +1,97 @@
+version: "3.1"
+
+rules:
+  - rule: Приветствие
+    steps:
+      - intent: приветствие
+      - action: utter_greet
+
+  - rule: Прощание
+    steps:
+      - intent: прощание
+      - action: utter_goodbye
+
+  - rule: Запрос помощи
+    steps:
+      - intent: запрос_помощи
+      - action: utter_help
+
+  - rule: Описание архитектуры
+    steps:
+      - intent: описание_архитектуры
+      - action: utter_describe_architecture
+
+  - rule: Выбор технологий
+    steps:
+      - intent: выбор_технологий
+      - action: utter_choose_tech_stack
+
+  - rule: Микросервисы
+    steps:
+      - intent: микросервисы
+      - action: utter_microservices
+
+  - rule: Монолитная архитектура
+    steps:
+      - intent: монолит
+      - action: utter_monolith
+
+  - rule: Интеграция систем
+    steps:
+      - intent: интеграция_систем
+      - action: utter_integration
+
+  - rule: Безопасность
+    steps:
+      - intent: безопасность
+      - action: utter_security
+
+  - rule: Производительность
+    steps:
+      - intent: производительность
+      - action: utter_performance
+
+  - rule: Масштабируемость
+    steps:
+      - intent: масштабируемость
+      - action: utter_scalability
+
+  - rule: Отказоустойчивость
+    steps:
+      - intent: отказоустойчивость
+      - action: utter_fault_tolerance
+
+  - rule: DevOps
+    steps:
+      - intent: DevOps
+      - action: utter_devops
+
+  - rule: Контейнеризация
+    steps:
+      - intent: контейнеризация
+      - action: utter_containerization
+
+  - rule: Выбор базы данных
+    steps:
+      - intent: выбор_базы_данных
+      - action: utter_database_choice
+
+  - rule: Методологии разработки
+    steps:
+      - intent: методологии_разработки
+      - action: utter_methodologies
+
+  - rule: Архитектурные паттерны
+    steps:
+      - intent: архитектурные_паттерны
+      - action: utter_architecture_patterns
+
+  - rule: Мониторинг микросервисов
+    steps:
+      - intent: мониторинг_микросервисов
+      - action: utter_monitoring_info
+
+  - rule: Сервисная сеть
+    steps:
+      - intent: сервисная_сеть
+      - action: utter_cloud_technologies
