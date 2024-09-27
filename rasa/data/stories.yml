@@ -1,0 +1,84 @@
+version: "3.1"
+
+stories:
+  - story: Приветствие и запрос помощи
+    steps:
+      - intent: приветствие
+      - action: utter_greet
+      - intent: запрос_помощи
+      - action: utter_help
+
+  - story: Описание архитектуры
+    steps:
+      - intent: описание_архитектуры
+      - action: utter_describe_architecture
+
+  - story: Выбор технологий
+    steps:
+      - intent: выбор_технологий
+      - action: utter_choose_tech_stack
+
+  - story: Микросервисы
+    steps:
+      - intent: микросервисы
+      - action: utter_microservices
+
+  - story: Монолит
+    steps:
+      - intent: монолит
+      - action: utter_monolith
+
+  - story: Интеграция систем
+    steps:
+      - intent: интеграция_систем
+      - action: utter_integration
+
+  - story: Безопасность
+    steps:
+      - intent: безопасность
+      - action: utter_security
+
+  - story: Производительность
+    steps:
+      - intent: производительность
+      - action: utter_performance
+
+  - story: Масштабируемость
+    steps:
+      - intent: масштабируемость
+      - action: utter_scalability
+
+  - story: Отказоустойчивость
+    steps:
+      - intent: отказоустойчивость
+      - action: utter_fault_tolerance
+
+  - story: DevOps
+    steps:
+      - intent: DevOps
+      - action: utter_devops
+
+  - story: Контейнеризация
+    steps:
+      - intent: контейнеризация
+      - action: utter_containerization
+
+  - story: Выбор базы данных
+    steps:
+      - intent: выбор_базы_данных
+      - action: utter_database_choice
+
+  - story: Методологии разработки
+    steps:
+      - intent: методологии_разработки
+      - action: utter_methodologies
+
+  - story: Архитектурные паттерны
+    steps:
+      - intent: архитектурные_паттерны
+      - action: utter_architecture_patterns
+
+  - story: Мониторинг микросервисов
+    steps:
+      - intent: мониторинг_микросервисов
+      - action: utter_monitoring_info
